@@ -18,6 +18,10 @@ export class RedditClient {
   private session: SessionData | null = null;
   private readonly sessionPath: string;
   private readonly userAgent = "reddirect:v1.0.0 (MCP server)";
+  private lastPostTime = 0;
+  private static readonly POST_DELAY_MS = 1500;
+  private static readonly MAX_RETRIES = 3;
+  private static readonly DEFAULT_RETRY_DELAY_MS = 5000;
 
   constructor(sessionPath?: string) {
     this.sessionPath = sessionPath || DEFAULT_SESSION_PATH;
@@ -156,6 +160,23 @@ export class RedditClient {
     return res.json();
   }
 
+  private async throttle(): Promise<void> {
+    const elapsed = Date.now() - this.lastPostTime;
+    if (elapsed < RedditClient.POST_DELAY_MS) {
+      const wait = RedditClient.POST_DELAY_MS - elapsed;
+      console.error(`[reddirect] Throttling write request (${wait}ms)`);
+      await new Promise((r) => setTimeout(r, wait));
+    }
+  }
+
+  private parseRetryDelay(message: string): number {
+    const match = message.match(/(\d+)\s*(?:second|minute)/i);
+    if (!match) return RedditClient.DEFAULT_RETRY_DELAY_MS;
+    const value = parseInt(match[1], 10);
+    if (message.toLowerCase().includes("minute")) return value * 60 * 1000;
+    return value * 1000;
+  }
+
   async post(
     endpoint: string,
     body: Record<string, string>
@@ -169,19 +190,38 @@ export class RedditClient {
     const url = endpoint.startsWith("http")
       ? endpoint
       : `${OAUTH_BASE}${endpoint}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Bearer ${this.session!.accessToken}`,
-        "User-Agent": this.userAgent,
-      },
-      body: new URLSearchParams({
-        ...body,
-        api_type: "json",
-      }),
-    });
-    return res.json();
+
+    for (let attempt = 0; attempt <= RedditClient.MAX_RETRIES; attempt++) {
+      await this.throttle();
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${this.session!.accessToken}`,
+          "User-Agent": this.userAgent,
+        },
+        body: new URLSearchParams({
+          ...body,
+          api_type: "json",
+        }),
+      });
+      this.lastPostTime = Date.now();
+      const data = await res.json();
+
+      const errors = data?.json?.errors;
+      if (errors?.length && errors[0][0] === "RATELIMIT") {
+        if (attempt < RedditClient.MAX_RETRIES) {
+          const delay = this.parseRetryDelay(errors[0][1]);
+          console.error(
+            `[reddirect] Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${RedditClient.MAX_RETRIES})`
+          );
+          await new Promise((r) => setTimeout(r, delay));
+          continue;
+        }
+      }
+
+      return data;
+    }
   }
 
   getUsername(): string {
