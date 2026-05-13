@@ -235,6 +235,50 @@ export function register(server: McpServer, client: RedditClient): void {
   );
 
   server.registerTool(
+    "get_flairs",
+    {
+      title: "Get Subreddit Flairs",
+      description:
+        "Get available post flairs for a subreddit. Returns flair IDs and text needed for creating posts with flairs.",
+      inputSchema: z.object({
+        subreddit: z.string().describe("Subreddit name without r/ prefix"),
+      }),
+    },
+    async ({ subreddit }) => {
+      try {
+        const data = await client.getJson(
+          `/r/${subreddit}/api/link_flair_v2.json`
+        );
+        const flairs = (Array.isArray(data) ? data : []).map((f: any) => ({
+          id: f.id,
+          text: f.text,
+          type: f.type,
+          text_editable: f.text_editable,
+          background_color: f.background_color || null,
+        }));
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify({ subreddit, flairs }, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Error getting flairs: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  server.registerTool(
     "get_user_profile",
     {
       title: "Get User Profile",

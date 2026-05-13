@@ -73,7 +73,7 @@ Add to your MCP client configuration:
 </details>
 
 <details>
-<summary><strong>Browse & Read (5 tools)</strong></summary>
+<summary><strong>Browse & Read (6 tools)</strong></summary>
 
 | Tool | Description |
 |------|-------------|
@@ -81,6 +81,7 @@ Add to your MCP client configuration:
 | `get_post` | Fetch a post with flat, depth-annotated comment tree |
 | `search_reddit` | Search globally or within a subreddit |
 | `get_subreddit_info` | Get description, rules, subscriber count |
+| `get_flairs` | Get available post flairs for a subreddit (IDs and text) |
 | `get_user_profile` | Get karma breakdown and account age |
 
 </details>
@@ -90,7 +91,7 @@ Add to your MCP client configuration:
 
 | Tool | Description |
 |------|-------------|
-| `create_post` | Create text or link posts with optional flair |
+| `create_post` | Create text or link posts with optional flair (supports flair ID and text) |
 | `reply` | Reply to a post or comment |
 | `edit_content` | Edit your own posts or comments |
 | `delete_content` | Delete your own posts or comments |

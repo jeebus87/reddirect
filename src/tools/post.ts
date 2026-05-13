@@ -36,9 +36,13 @@ export function register(server: McpServer, client: RedditClient): void {
           .string()
           .optional()
           .describe("Flair text to apply to the post"),
+        flair_id: z
+          .string()
+          .optional()
+          .describe("Flair template ID (use get_flairs to find available IDs for a subreddit)"),
       }),
     },
-    async ({ subreddit, title, type, body, flair_text }) => {
+    async ({ subreddit, title, type, body, flair_text, flair_id }) => {
       try {
         const params: Record<string, string> = {
           sr: subreddit,
@@ -47,6 +51,9 @@ export function register(server: McpServer, client: RedditClient): void {
         };
         if (body) {
           params[type === "link" ? "url" : "text"] = body;
+        }
+        if (flair_id) {
+          params.flair_id = flair_id;
         }
         if (flair_text) {
           params.flair_text = flair_text;

@@ -144,6 +144,9 @@ export class QueueManager {
           p[(params.type as string) === "link" ? "url" : "text"] =
             params.body as string;
         }
+        if (params.flair_id) {
+          p.flair_id = params.flair_id as string;
+        }
         if (params.flair_text) {
           p.flair_text = params.flair_text as string;
         }
