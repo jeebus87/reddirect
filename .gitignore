@@ -2,9 +2,3 @@ node_modules/
 dist/
 .reddirect/
 *.tsbuildinfo
-
-# AI/editor config
-CLAUDE.md
-.claude/
-.planning/
-docs/superpowers/

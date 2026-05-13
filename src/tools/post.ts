@@ -20,7 +20,7 @@ export function register(server: McpServer, client: RedditClient): void {
     {
       title: "Create Reddit Post",
       description:
-        "Create a new text or link post in a subreddit. Returns the permalink of the created post.",
+        "Create a NEW top-level post in a subreddit. Do NOT use this to reply to existing posts or comments - use the 'reply' tool instead. Returns the permalink of the created post.",
       inputSchema: z.object({
         subreddit: z.string().describe("Subreddit name without r/ prefix"),
         title: z.string().describe("Post title"),
@@ -113,11 +113,11 @@ export function register(server: McpServer, client: RedditClient): void {
     {
       title: "Reply to Post or Comment",
       description:
-        "Reply to a Reddit post or comment. Provide a full URL.",
+        "Reply to an existing Reddit post or comment. Use this whenever you want to respond to something already on Reddit. Provide the permalink URL of the specific post or comment you are replying to (use the permalink from get_post results).",
       inputSchema: z.object({
         url: z
           .string()
-          .describe("Full Reddit URL of the post or comment to reply to"),
+          .describe("Full Reddit permalink URL of the specific post or comment to reply to. To reply to a comment, use that comment's permalink, not the post URL."),
         body: z.string().describe("Reply text content"),
       }),
     },
