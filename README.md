@@ -2,10 +2,10 @@
 
 # reddirect
 
-**Reddit MCP Server — No API Keys Required**
+**Reddit MCP Server - No API Keys Required**
 
-Browse, post, comment, vote, and manage your Reddit account from any MCP client.
-Just install and go.
+Browse, post, comment, vote, and queue actions with timed delays from any MCP client.
+No API keys. Just install and go.
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-5A45FF)](https://modelcontextprotocol.io)
@@ -17,7 +17,7 @@ Just install and go.
 
 ## Why reddirect?
 
-Every other Reddit MCP server requires you to register an app, get API keys, and configure OAuth. **reddirect doesn't.** It uses Reddit's public OAuth for reads and a one-time browser login for writes — zero setup friction.
+Every other Reddit MCP server requires you to register an app, get API keys, and configure OAuth. **reddirect doesn't.** It uses Reddit's public OAuth for reads and a one-time browser login for writes - zero setup friction.
 
 | | Other Reddit MCPs | reddirect |
 |---|---|---|
@@ -54,7 +54,7 @@ Add to your MCP client configuration:
 
 ### 3. Use it
 
-**Reads work immediately** — browse subreddits, search posts, check profiles.
+**Reads work immediately** - browse subreddits, search posts, check profiles.
 
 **For writes**, run the `authorize` tool once. A Chrome window opens, you log into Reddit, and it closes automatically. That's it.
 
@@ -67,7 +67,7 @@ Add to your MCP client configuration:
 
 | Tool | Description |
 |------|-------------|
-| `check_session` | Check auth status — anonymous or logged in |
+| `check_session` | Check auth status - anonymous or logged in |
 | `authorize` | One-time browser login for write access |
 
 </details>
@@ -110,7 +110,7 @@ Add to your MCP client configuration:
 </details>
 
 <details>
-<summary><strong>Account (4 tools)</strong></summary>
+<summary><strong>Account (5 tools)</strong></summary>
 
 | Tool | Description |
 |------|-------------|
@@ -119,6 +119,19 @@ Add to your MCP client configuration:
 | `get_subscriptions` | List subscribed subreddits |
 | `subscribe_subreddit` | Subscribe to a subreddit |
 | `unsubscribe_subreddit` | Unsubscribe from a subreddit |
+
+</details>
+
+<details>
+<summary><strong>Queue (3 tools)</strong></summary>
+
+| Tool | Description |
+|------|-------------|
+| `queue_action` | Enqueue any write operation with a randomized delay (default 2-3 min) |
+| `queue_status` | Check progress of queued items - pending, processing, completed, or failed |
+| `queue_cancel` | Cancel a specific queued item or clear the entire queue |
+
+Space out multiple write operations with natural, randomized timing. Enqueue posts, replies, votes, or any write action - they execute sequentially with configurable delays between each.
 
 </details>
 
@@ -140,7 +153,7 @@ Add to your MCP client configuration:
 └─────────────────────────────────────────────┘
 ```
 
-**Reads** use Reddit's public `installed_client` OAuth grant — no credentials needed.
+**Reads** use Reddit's public `installed_client` OAuth grant - no credentials needed.
 
 **Writes** use a `token_v2` JWT extracted from a one-time Chrome login via the DevTools Protocol. No passwords are stored. The token lasts ~24 hours.
 
@@ -149,7 +162,7 @@ Add to your MCP client configuration:
 ## Requirements
 
 - **Node.js 18+**
-- **Google Chrome** — only needed once for the `authorize` step (not needed for reads)
+- **Google Chrome** - only needed once for the `authorize` step (not needed for reads)
 
 ---
 
@@ -159,7 +172,7 @@ Add to your MCP client configuration:
 |---------|-----|
 | Writes say "authentication required" | Run the `authorize` tool |
 | Chrome window doesn't appear | Make sure Google Chrome is installed |
-| "Server error" during login | Reddit rate limit — wait 10 minutes |
+| "Server error" during login | Reddit rate limit - wait 10 minutes |
 | Session expired | Run `authorize` again (~24hr sessions) |
 | Want to reset session | Delete `~/.reddirect/session.json` |
 
@@ -167,4 +180,4 @@ Add to your MCP client configuration:
 
 ## License
 
-MIT — [License](./LICENSE)
+MIT - [License](./LICENSE)
