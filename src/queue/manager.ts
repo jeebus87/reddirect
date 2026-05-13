@@ -164,6 +164,33 @@ export class QueueManager {
         };
       }
 
+      case "crosspost": {
+        const thingId = extractThingId(params.url as string);
+        if (!thingId || !thingId.startsWith("t3_"))
+          throw new Error("Could not extract post ID from URL");
+        const cp: Record<string, string> = {
+          sr: params.subreddit as string,
+          kind: "crosspost",
+          crosspost_fullname: thingId,
+        };
+        if (params.title) cp.title = params.title as string;
+        if (params.flair_id) cp.flair_id = params.flair_id as string;
+        if (params.flair_text) cp.flair_text = params.flair_text as string;
+        const cpData = await this.client.post("/api/submit", cp);
+        const cpErrors = cpData?.json?.errors;
+        if (cpErrors?.length) {
+          throw new Error(
+            cpErrors.map((e: string[]) => e.join(": ")).join("; ")
+          );
+        }
+        return {
+          success: true,
+          permalink: cpData?.json?.data?.url || null,
+          id: cpData?.json?.data?.name || cpData?.json?.data?.id || null,
+          crossposted_from: thingId,
+        };
+      }
+
       case "reply": {
         const thingId = extractThingId(params.url as string);
         if (!thingId) throw new Error("Could not extract ID from URL");

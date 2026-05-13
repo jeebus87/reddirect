@@ -109,6 +109,113 @@ export function register(server: McpServer, client: RedditClient): void {
   );
 
   server.registerTool(
+    "crosspost",
+    {
+      title: "Crosspost to Another Subreddit",
+      description:
+        "Share an existing Reddit post to a different subreddit as a crosspost. Provide the URL of the original post and the target subreddit.",
+      inputSchema: z.object({
+        url: z
+          .string()
+          .describe("Full Reddit URL of the original post to crosspost"),
+        subreddit: z
+          .string()
+          .describe("Target subreddit name without r/ prefix"),
+        title: z
+          .string()
+          .optional()
+          .describe("Custom title for the crosspost (defaults to the original post title)"),
+        flair_id: z
+          .string()
+          .optional()
+          .describe("Flair template ID for the target subreddit"),
+        flair_text: z
+          .string()
+          .optional()
+          .describe("Flair text for the target subreddit"),
+      }),
+    },
+    async ({ url, subreddit, title, flair_id, flair_text }) => {
+      try {
+        const thingId = extractThingId(url);
+        if (!thingId || !thingId.startsWith("t3_")) {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: "Could not extract post ID from URL. Crossposting only works with posts, not comments.",
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        const params: Record<string, string> = {
+          sr: subreddit,
+          kind: "crosspost",
+          crosspost_fullname: thingId,
+        };
+        if (title) {
+          params.title = title;
+        }
+        if (flair_id) {
+          params.flair_id = flair_id;
+        }
+        if (flair_text) {
+          params.flair_text = flair_text;
+        }
+
+        const data = await client.post("/api/submit", params);
+        const result = data?.json?.data;
+        const errors = data?.json?.errors;
+
+        if (errors && errors.length > 0) {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: JSON.stringify({
+                  success: false,
+                  error: errors.map((e: string[]) => e.join(": ")).join("; "),
+                }, null, 2),
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(
+                {
+                  success: true,
+                  permalink: result?.url || null,
+                  id: result?.name || result?.id || null,
+                  crossposted_from: thingId,
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Error crossposting: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  server.registerTool(
     "reply",
     {
       title: "Reply to Post or Comment",

@@ -14,6 +14,7 @@ export interface QueueItem {
 
 export const WRITE_ACTIONS = [
   "create_post",
+  "crosspost",
   "reply",
   "edit_content",
   "delete_content",

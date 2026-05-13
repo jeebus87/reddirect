@@ -87,11 +87,12 @@ Add to your MCP client configuration:
 </details>
 
 <details>
-<summary><strong>Write (4 tools)</strong></summary>
+<summary><strong>Write (5 tools)</strong></summary>
 
 | Tool | Description |
 |------|-------------|
 | `create_post` | Create text or link posts with optional flair (supports flair ID and text) |
+| `crosspost` | Share an existing post to a different subreddit |
 | `reply` | Reply to a post or comment |
 | `edit_content` | Edit your own posts or comments |
 | `delete_content` | Delete your own posts or comments |
