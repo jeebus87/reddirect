@@ -92,7 +92,7 @@ Add to your MCP client configuration:
 | Tool | Description |
 |------|-------------|
 | `create_post` | Create text or link posts with optional flair (supports flair ID and text) |
-| `crosspost` | Share an existing post to a different subreddit |
+| `crosspost` | Share an existing post to a different subreddit (auto-fetches original title) |
 | `reply` | Reply to a post or comment |
 | `edit_content` | Edit your own posts or comments |
 | `delete_content` | Delete your own posts or comments |
