@@ -11,6 +11,8 @@ import { register as registerVoteTools } from "./tools/vote.js";
 import { register as registerSaveTools } from "./tools/save.js";
 import { register as registerInboxTools } from "./tools/inbox.js";
 import { register as registerSubscriptionTools } from "./tools/subscriptions.js";
+import { register as registerQueueTools } from "./tools/queue.js";
+import { QueueManager } from "./queue/manager.js";
 import { DEFAULT_SESSION_PATH } from "./constants.js";
 
 const server = new McpServer({
@@ -22,6 +24,7 @@ const sessionPath =
   process.env.REDDIT_MCP_SESSION_PATH || DEFAULT_SESSION_PATH;
 
 const client = new RedditClient(sessionPath);
+const queue = new QueueManager(client);
 
 registerAuthTools(server, client);
 registerBrowseTools(server, client);
@@ -31,6 +34,7 @@ registerVoteTools(server, client);
 registerSaveTools(server, client);
 registerInboxTools(server, client);
 registerSubscriptionTools(server, client);
+registerQueueTools(server, queue);
 
 async function main() {
   const transport = new StdioServerTransport();
