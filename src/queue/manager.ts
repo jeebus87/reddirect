@@ -168,12 +168,20 @@ export class QueueManager {
         const thingId = extractThingId(params.url as string);
         if (!thingId || !thingId.startsWith("t3_"))
           throw new Error("Could not extract post ID from URL");
+        let cpTitle: string;
+        if (params.title) {
+          cpTitle = params.title as string;
+        } else {
+          const postId = thingId.replace("t3_", "");
+          const postData = await this.client.getJson(`/comments/${postId}.json?limit=0`);
+          cpTitle = postData?.[0]?.data?.children?.[0]?.data?.title || "Crosspost";
+        }
         const cp: Record<string, string> = {
           sr: params.subreddit as string,
           kind: "crosspost",
           crosspost_fullname: thingId,
+          title: cpTitle,
         };
-        if (params.title) cp.title = params.title as string;
         if (params.flair_id) cp.flair_id = params.flair_id as string;
         if (params.flair_text) cp.flair_text = params.flair_text as string;
         const cpData = await this.client.post("/api/submit", cp);

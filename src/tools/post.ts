@@ -150,14 +150,21 @@ export function register(server: McpServer, client: RedditClient): void {
           };
         }
 
+        let postTitle: string;
+        if (title) {
+          postTitle = title;
+        } else {
+          const postId = thingId.replace("t3_", "");
+          const postData = await client.getJson(`/comments/${postId}.json?limit=0`);
+          postTitle = postData?.[0]?.data?.children?.[0]?.data?.title || "Crosspost";
+        }
+
         const params: Record<string, string> = {
           sr: subreddit,
           kind: "crosspost",
           crosspost_fullname: thingId,
+          title: postTitle,
         };
-        if (title) {
-          params.title = title;
-        }
         if (flair_id) {
           params.flair_id = flair_id;
         }
