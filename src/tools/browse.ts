@@ -327,4 +327,74 @@ export function register(server: McpServer, client: RedditClient): void {
       }
     }
   );
+
+  server.registerTool(
+    "get_user_comments",
+    {
+      title: "Get User Comments",
+      description:
+        "Get a Reddit user's recent comments. Returns comment body, score, subreddit, and the post it was made on.",
+      inputSchema: z.object({
+        username: z.string().describe("Reddit username without u/ prefix"),
+        sort: z
+          .enum(["new", "hot", "top", "controversial"])
+          .default("new")
+          .describe("Sort order for comments"),
+        time: z
+          .enum(["hour", "day", "week", "month", "year", "all"])
+          .optional()
+          .describe("Time range filter (only for top and controversial)"),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(100)
+          .default(25)
+          .describe("Number of comments to return"),
+      }),
+    },
+    async ({ username, sort, time, limit }) => {
+      try {
+        const params = new URLSearchParams({ limit: String(limit) });
+        if (time && (sort === "top" || sort === "controversial")) {
+          params.set("t", time);
+        }
+        const data = await client.getJson(
+          `/user/${username}/comments.json?${params}&sort=${sort}`
+        );
+        const comments = (data?.data?.children || []).map((c: any) => {
+          const d = c.data;
+          return {
+            id: d.name || `t1_${d.id}`,
+            body: d.body,
+            score: d.score,
+            subreddit: d.subreddit,
+            postTitle: d.link_title,
+            postUrl: `${BASE_URL}${d.permalink.replace(/[^/]+\/?$/, "")}`,
+            permalink: `${BASE_URL}${d.permalink}`,
+            parentId: d.parent_id,
+            createdUtc: d.created_utc,
+          };
+        });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify({ username, sort, comments }, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Error getting user comments: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
 }
